@@ -1,23 +1,27 @@
-[package]
+[workspace.package]
 name = "push-core"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-#
-[[bin]]
-name = "server"
-path = "src/bin/server.rs"
+[workspace.lints.rust]
+unsafe_code = "forbid"
 
-[dependencies]
-autometrics = { version = "1.0.0", features = ["prometheus-exporter"] }
-axum = { version = "0.7.4", features = ["ws", "macros"] }
-futures-util = "0.3.30"
+[workspace]
+resolver = "2"
+members = [
+  "crates/libs/lib-consumer",
+  "crates/libs/lib-core",
+  "crates/services/consumer", "crates/services/producer",
+  "crates/services/state_manager",
+]
+
+[workspace.dependencies]
 tokio = { version = "1.35.1", features = [
   "rt-multi-thread",
   "signal",
   "macros",
 ] }
-tower = "0.4.13"
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"

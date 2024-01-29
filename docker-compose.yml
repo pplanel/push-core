@@ -1,0 +1,14 @@
+version: "3.6"
+
+services:
+  rabbit:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    networks:
+      - push-core-network
+
+networks:
+  push-core-network:
+    name: push-core-network

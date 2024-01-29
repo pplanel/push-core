@@ -1,0 +1,100 @@
+use std::time::Duration;
+
+use clap::Parser;
+use lapin::{
+    options::{BasicPublishOptions, QueueDeclareOptions},
+    types::FieldTable,
+    BasicProperties, Connection, ConnectionProperties,
+};
+use serde::{Deserialize, Serialize};
+use tracing::info;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
+
+#[derive(Debug, Parser)]
+struct Args {
+    #[arg(short, long, default_value = "queue")]
+    queue: String,
+
+    #[arg(short, long, default_value_t = 2)]
+    timeout: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Message {
+    status: bool,
+    size: usize,
+    message: String,
+}
+
+#[tokio::main]
+async fn main() {
+    init_logging();
+
+    let args = Args::parse();
+
+    let uri = "amqp://localhost:5673";
+    let options = ConnectionProperties::default()
+        .with_executor(tokio_executor_trait::Tokio::current())
+        .with_reactor(tokio_reactor_trait::Tokio);
+
+    let connection = Connection::connect(uri, options).await.unwrap();
+    let channel = connection.create_channel().await.unwrap();
+
+    let _queue = channel
+        .queue_declare(
+            &args.queue,
+            QueueDeclareOptions::default(),
+            FieldTable::default(),
+        )
+        .await
+        .unwrap();
+
+    info!(queue = &args.queue, "Queue declared");
+
+    let publisher_handle = tokio::task::spawn(async move {
+        for i in 0..10 {
+            let message = Message {
+                status: true,
+                size: i,
+                message: String::from("Hello"),
+            };
+
+            let payload = serde_json::to_vec(&message).unwrap();
+            let _confirm = channel
+                .basic_publish(
+                    "",
+                    &args.queue,
+                    BasicPublishOptions::default(),
+                    &payload,
+                    BasicProperties::default().with_priority(10),
+                )
+                .await
+                .expect("publish")
+                .await
+                .expect("confirmation");
+
+            info!("Message published");
+            tokio::time::sleep(Duration::from_secs(args.timeout)).await;
+        }
+    });
+
+    tokio::select! {
+        _ = tokio::signal::ctrl_c() => {
+            info!("terminating");
+            let _ = publisher_handle.await;
+        }
+    }
+}
+
+fn init_logging() {
+    let fmt_layer = tracing_subscriber::fmt::layer()
+        .with_file(true)
+        .with_line_number(true)
+        .without_time();
+
+    let env_filter = EnvFilter::from_default_env().add_directive("push_core=info".parse().unwrap());
+    tracing_subscriber::registry()
+        .with(fmt_layer)
+        .with(env_filter)
+        .init();
+}

@@ -2,7 +2,7 @@ use std::net::SocketAddr;
 
 use autometrics::{
     autometrics,
-    prometheus_exporter::{self, PrometheusResponse},
+    prometheus_exporter::{self},
 };
 use axum::{
     extract::{ws::WebSocket, ConnectInfo, WebSocketUpgrade},
@@ -81,6 +81,7 @@ async fn read(mut receiver: SplitStream<WebSocket>) {
 // }
 //
 //
+
 async fn root_get() -> impl IntoResponse {
     "Hello"
 }

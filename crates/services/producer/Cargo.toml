@@ -1,0 +1,18 @@
+[package]
+name = "producer"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+lapin = "2.3.1"
+tokio-executor-trait = "2.1.1"
+tokio-reactor-trait = "1.1.0"
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+clap = { version = "4.4.18", features = ["derive"] }
+
+[lints]
+workspace = true

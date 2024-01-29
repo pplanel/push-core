@@ -1,0 +1,16 @@
+[package]
+name = "state_manager"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+autometrics = { version = "1.0.0", features = ["prometheus-exporter"] }
+axum = { version = "0.7.4", features = ["ws", "macros"] }
+futures-util = "0.3.30"
+tower = "0.4.13"
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[lints]
+workspace = true
