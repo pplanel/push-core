@@ -8,13 +8,6 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Message {
-    status: bool,
-    size: usize,
-    message: String,
-}
-
 #[tokio::main]
 async fn main() {
     init_logging();
