@@ -11,8 +11,10 @@ resolver = "2"
 members = [
   "crates/libs/lib-consumer",
   "crates/libs/lib-core",
-  "crates/services/consumer", "crates/services/producer",
+  "crates/services/consumer",
+  "crates/services/producer",
   "crates/services/state_manager",
+  "crates/services/websocket",
 ]
 
 [workspace.dependencies]
@@ -25,3 +27,5 @@ tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 serde = { version = "*", features = ["derive"] }
 serde_json = "*"
+rand = "0.8.5"
+redis = "0.24.0"

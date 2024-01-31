@@ -6,7 +6,8 @@ use lapin::{
     types::FieldTable,
     BasicProperties, Connection, ConnectionProperties,
 };
-use serde::{Deserialize, Serialize};
+use lib_core::Message;
+use tokio::sync::oneshot;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
@@ -17,13 +18,6 @@ struct Args {
 
     #[arg(short, long, default_value_t = 2)]
     timeout: u64,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Message {
-    status: bool,
-    size: usize,
-    message: String,
 }
 
 #[tokio::main]
@@ -51,36 +45,43 @@ async fn main() {
 
     info!(queue = &args.queue, "Queue declared");
 
+    let (tx, mut rx) = oneshot::channel();
+
     let publisher_handle = tokio::task::spawn(async move {
-        for i in 0..10 {
-            let message = Message {
-                status: true,
-                size: i,
-                message: String::from("Hello"),
-            };
+        let mut interval = tokio::time::interval(Duration::from_secs(2));
 
-            let payload = serde_json::to_vec(&message).unwrap();
-            let _confirm = channel
-                .basic_publish(
-                    "",
-                    &args.queue,
-                    BasicPublishOptions::default(),
-                    &payload,
-                    BasicProperties::default().with_priority(10),
-                )
-                .await
-                .expect("publish")
-                .await
-                .expect("confirmation");
+        loop {
+            tokio::select! {
+                _ = interval.tick() => {
+                    let message = Message::fake();
+                    let payload = serde_json::to_vec(&message).unwrap();
+                    let _ = channel
+                        .basic_publish(
+                            "",
+                            &args.queue,
+                            BasicPublishOptions::default(),
+                            &payload,
+                            BasicProperties::default().with_priority(10),
+                            )
+                        .await
+                        .expect("publish")
+                        .await
+                        .expect("confirmation");
 
-            info!("Message published");
-            tokio::time::sleep(Duration::from_secs(args.timeout)).await;
+                    info!("Message published");
+                }
+                _ = &mut rx => {
+                    break;
+                }
+            }
         }
     });
 
     tokio::select! {
         _ = tokio::signal::ctrl_c() => {
             info!("terminating");
+            connection.close(0, "").await.unwrap();
+            tx.send(true).unwrap();
             let _ = publisher_handle.await;
         }
     }

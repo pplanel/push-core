@@ -9,6 +9,13 @@ services:
     networks:
       - push-core-network
 
+  redis:
+    image: redis:latest
+    ports:
+      - "6679:6379"
+    networks:
+      - push-core-network
+
 networks:
   push-core-network:
     name: push-core-network

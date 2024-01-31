@@ -6,6 +6,7 @@ edition.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+lib-core = { path = "../../libs/lib-core" }
 lapin = "2.3.1"
 tokio-executor-trait = "2.1.1"
 tokio-reactor-trait = "1.1.0"
@@ -14,4 +15,5 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+redis.workspace = true
 futures-lite = "2.2.0"

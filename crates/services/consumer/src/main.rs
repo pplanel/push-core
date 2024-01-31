@@ -4,8 +4,9 @@ use lapin::{
     types::FieldTable,
     BasicProperties, Connection, ConnectionProperties,
 };
-use serde::{Deserialize, Serialize};
-use tracing::info;
+use lib_core::Message;
+use redis::Commands;
+use tracing::{error, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
 #[tokio::main]
@@ -18,6 +19,9 @@ async fn main() {
 
     let connection = Connection::connect(uri, options).await.unwrap();
     let channel = connection.create_channel().await.unwrap();
+
+    let redis_client = redis::Client::open("redis://127.0.0.1:6679").unwrap();
+    let mut con = redis_client.get_connection().unwrap();
 
     let mut consumer = channel
         .basic_consume(
@@ -38,6 +42,10 @@ async fn main() {
                 .ack(BasicAckOptions::default())
                 .await
                 .expect("Failed to ack send_webhook_event message");
+            match con.publish::<&str, Message, u8>("events", message) {
+                Ok(result) => info!(result = result, "published redis message"),
+                Err(err) => error!(err = ?err, "error publishing redis message"),
+            };
         }
     }
     channel
@@ -62,7 +70,7 @@ fn init_logging() {
         .with_line_number(true)
         .without_time();
 
-    let env_filter = EnvFilter::from_default_env().add_directive("push_core=info".parse().unwrap());
+    let env_filter = EnvFilter::from_default_env().add_directive("consumer=info".parse().unwrap());
     tracing_subscriber::registry()
         .with(fmt_layer)
         .with(env_filter)
