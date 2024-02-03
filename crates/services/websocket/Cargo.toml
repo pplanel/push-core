@@ -6,13 +6,19 @@ edition.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+lib-consumer = { path = "../../libs/lib-consumer" }
 lib-core = { path = "../../libs/lib-core" }
+axum = { version = "0.6.10", features = ["ws"] }
 tokio.workspace = true
+tokio-util.workspace = true
+console-subscriber.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 redis.workspace = true
+futures.workspace = true
+futures-util.workspace = true
 
 [lints]
 workspace = true

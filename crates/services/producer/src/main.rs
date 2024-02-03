@@ -48,7 +48,7 @@ async fn main() {
     let (tx, mut rx) = oneshot::channel();
 
     let publisher_handle = tokio::task::spawn(async move {
-        let mut interval = tokio::time::interval(Duration::from_secs(2));
+        let mut interval = tokio::time::interval(Duration::from_secs(args.timeout));
 
         loop {
             tokio::select! {

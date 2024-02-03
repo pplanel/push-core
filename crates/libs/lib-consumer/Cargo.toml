@@ -6,3 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+futures.workspace = true
+futures-util.workspace = true
+redis.workspace = true
+tokio.workspace = true
+futures-core = "*"
+async-stream = "*"

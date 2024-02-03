@@ -1,2 +1,4 @@
 [env]
 RUST_LOG = "debug"
+REDIS_CONN = "redis://127.0.0.1:6679"
+RABBIT_CONN = "amqp://localhost:5673"

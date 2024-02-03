@@ -9,7 +9,7 @@ use rand::{
 };
 use redis::{FromRedisValue, ToRedisArgs};
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Message {
     game_id: usize,
     event_type: EventType,
@@ -49,7 +49,7 @@ impl Message {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum EventType {
     Start,      // (Início):
     End,        // (Fim):
